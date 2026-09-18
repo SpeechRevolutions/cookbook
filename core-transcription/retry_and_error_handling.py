@@ -1,11 +1,16 @@
 """Handle every failure mode the client can raise.
 
+    python retry_and_error_handling.py meeting.mp3
+
 The built-in retry (`max_retries` / `retry_backoff`) already covers transient
 429/5xx/network errors. This recipe shows the errors worth catching yourself:
-a bad key, a job that fails server-side, and a manual backoff loop for
-RateLimitError that respects `retry_after` on top of the client's own retries.
+a missing file, a bad key, a job that fails server-side, and a manual backoff
+loop for RateLimitError that respects `retry_after` on top of the client's own
+retries.
 """
 
+import argparse
+import sys
 import time
 
 from speechrevolutions import SpeechRevolutions
@@ -33,13 +38,23 @@ def transcribe_with_manual_backoff(client: SpeechRevolutions, audio: str, *, max
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("audio", nargs="?", default="meeting.mp3",
+                        help="local file path or http(s) URL (default: meeting.mp3)")
+    args = parser.parse_args()
+
     # max_retries/retry_backoff handle transient 429/5xx/network failures already;
     # this client keeps that budget small so the manual loop above is exercised.
     client = SpeechRevolutions(max_retries=1, retry_backoff=0.5)
 
     try:
-        result = transcribe_with_manual_backoff(client, "meeting.mp3")
+        result = transcribe_with_manual_backoff(client, args.audio)
         print(result.text[:200])
+    except FileNotFoundError:
+        # The most common failure of all, and not an SDK exception: the path is
+        # resolved locally before any request is made.
+        print(f"no such file: {args.audio}", file=sys.stderr)
+        raise SystemExit(1) from None
     except AuthenticationError:
         print("bad or missing API key — check SPEECHREVOLUTIONS_API_KEY")
     except UploadError as e:

@@ -1,0 +1,10 @@
+{
+  "name": "cookbook-node-harness",
+  "private": true,
+  "type": "module",
+  "description": "Installs what the Express webhook recipe needs so it can be run in tests.",
+  "dependencies": {
+    "@speechrevolutions/stt": "file:../../../node-sdk",
+    "express": "^5.2.1"
+  }
+}
