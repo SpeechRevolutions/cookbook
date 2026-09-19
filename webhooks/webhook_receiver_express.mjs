@@ -1,7 +1,7 @@
 /**
  * A runnable Express server that submits jobs and receives their webhooks.
  *
- *   npm install express @speechrevolutions/stt
+ *   npm install express speechrevolutions
  *   export SR_WEBHOOK_SECRET=...        # the signing secret from your dashboard
  *   node webhook_receiver_express.mjs
  *
@@ -13,7 +13,7 @@
 
 import { createHmac, timingSafeEqual } from "node:crypto";
 import express from "express";
-import { SpeechRevolutions } from "@speechrevolutions/stt";
+import { SpeechRevolutions } from "speechrevolutions";
 
 const client = new SpeechRevolutions(); // reads SPEECHREVOLUTIONS_API_KEY
 const SECRET = process.env.SR_WEBHOOK_SECRET;
