@@ -226,10 +226,33 @@ def test_migration_from_deepgram(api, audio, tmp_path):
 # Every recipe is at least syntactically importable
 # ---------------------------------------------------------------------------
 
+# Only the repository's own recipe folders. An rglob over the whole checkout
+# collected anything that happened to be sitting inside it -- a nested clone, a
+# virtualenv, node_modules -- and then failed it for not having a "how to run
+# me" docstring. CI checks the python-sdk out to _sdk/ inside the workspace so
+# the recipes can run against its mock, which is exactly that case: every file
+# in _sdk/examples/ was collected as one of our recipes.
+_NOT_RECIPE_DIRS = {"tests", "node_modules"}
+
+
+def _is_recipe_dir(d) -> bool:
+    return (
+        d.is_dir()
+        and d.name not in _NOT_RECIPE_DIRS
+        # "_sdk", ".venv", ".git", "__pycache__" -- anything vendored or local.
+        and not d.name.startswith((".", "_"))
+    )
+
+
 RECIPES = sorted(
     str(p.relative_to(COOKBOOK))
-    for p in COOKBOOK.rglob("*.py")
-    if "tests" not in p.parts
+    for d in COOKBOOK.iterdir()
+    if _is_recipe_dir(d)
+    for p in d.rglob("*.py")
+    if not any(
+        part in _NOT_RECIPE_DIRS or part.startswith((".", "_"))
+        for part in p.relative_to(COOKBOOK).parts[:-1]
+    )
 )
 
 
