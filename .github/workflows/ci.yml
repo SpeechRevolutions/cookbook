@@ -1,0 +1,41 @@
+# Every recipe here is code a customer copies verbatim, so the suite runs on each
+# push and pull request rather than only when someone remembers.
+#
+# The recipes are exercised as SUBPROCESSES, invoked the way their own docstrings
+# say to invoke them, against the API mock that lives in the python-sdk repo --
+# the shared reference implementation every SDK tests against. That is why this
+# checks out python-sdk alongside.
+#
+# The SDK is installed from PyPI, not from the checkout: these recipes tell a
+# reader to `pip install speechrevolutions`, so the version under test has to be
+# the one they would actually get.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: SpeechRevolutions/python-sdk
+          path: _sdk
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: pip install -r requirements.txt pytest
+      # `tests` is passed explicitly: without a path argument of our own, pytest
+      # treats the --sdk-path VALUE as the target directory, anchors rootdir there,
+      # never loads our conftest, and then rejects --sdk-path as unrecognised.
+      - run: pytest -q tests --sdk-path "${{ github.workspace }}/_sdk"
