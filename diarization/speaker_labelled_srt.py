@@ -8,6 +8,9 @@ footage where knowing who's talking matters as much as what was said.
     python speaker_labelled_srt.py panel.mp3 --out panel.srt
 """
 
+
+from __future__ import annotations
+
 import argparse
 
 from speechrevolutions import SpeechRevolutions

@@ -8,6 +8,9 @@ transcription bars move in real time. The transcription runs in a background
 task; the browser just polls GET /progress/{job_id} every 500ms.
 """
 
+
+from __future__ import annotations
+
 import threading
 from dataclasses import dataclass, field
 from uuid import uuid4

@@ -6,6 +6,9 @@
     [00:00:07] SPEAKER_1: Happy to be here, let's get started.
 """
 
+
+from __future__ import annotations
+
 import argparse
 
 from speechrevolutions import SpeechRevolutions

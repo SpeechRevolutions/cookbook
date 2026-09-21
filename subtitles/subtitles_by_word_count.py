@@ -9,6 +9,9 @@ caption style.
     python subtitles_by_word_count.py talk.mp4 --words-per-cue 6 --out talk.srt
 """
 
+
+from __future__ import annotations
+
 import argparse
 
 from speechrevolutions import SpeechRevolutions
