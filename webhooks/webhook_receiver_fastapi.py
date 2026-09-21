@@ -36,7 +36,13 @@ def verify_signature(raw_body: bytes, signature_header: str, secret: str) -> boo
 @app.post("/transcribe")
 def start_transcription(audio: str, callback_base_url: str = "http://localhost:8000"):
     job_id = client.submit(audio, callback_url=f"{callback_base_url}/webhooks/speechrevolutions")
-    JOBS[job_id] = {"status": "processing"}
+    # setdefault, not assignment: the webhook can arrive before this line runs.
+    # The platform fires it the moment the job finishes, and a short clip can
+    # finish before submit() has even returned here. Assigning "processing"
+    # unconditionally would overwrite a terminal state that already landed, and
+    # the job would look stuck forever while the result sat in the response you
+    # just threw away.
+    JOBS.setdefault(job_id, {"status": "processing"})
     return {"job_id": job_id}
 
 

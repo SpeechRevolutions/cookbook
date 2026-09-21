@@ -36,7 +36,12 @@ app.post("/transcribe", express.json(), async (req, res) => {
   const jobId = await client.submit(audio, {
     callbackUrl: `${callbackBaseUrl}/webhooks/speechrevolutions`,
   });
-  JOBS.set(jobId, { status: "processing" });
+  // Only if absent: the webhook can arrive before this line runs. The platform
+  // fires it the moment the job finishes, and a short clip can finish while this
+  // handler is still awaiting submit(). Setting "processing" unconditionally
+  // would overwrite a terminal state that already landed, and the job would look
+  // stuck forever.
+  if (!JOBS.has(jobId)) JOBS.set(jobId, { status: "processing" });
   res.json({ job_id: jobId });
 });
 
