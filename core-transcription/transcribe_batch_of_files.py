@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from speechrevolutions import SpeechRevolutions
-from speechrevolutions.exceptions import STTError
+from speechrevolutions.exceptions import SpeechRevolutionsError
 
 
 def submit_all(client: SpeechRevolutions, paths: list[Path], *, workers: int) -> dict[str, Path]:
@@ -25,7 +25,7 @@ def submit_all(client: SpeechRevolutions, paths: list[Path], *, workers: int) ->
             path = futures[fut]
             try:
                 jobs[fut.result()] = path
-            except STTError as e:
+            except SpeechRevolutionsError as e:
                 print(f"  FAILED submit  {path.name}: {e}")
     return jobs
 

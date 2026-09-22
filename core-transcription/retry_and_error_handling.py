@@ -18,7 +18,7 @@ from speechrevolutions.exceptions import (
     AuthenticationError,
     JobFailedError,
     RateLimitError,
-    STTError,
+    SpeechRevolutionsError,
     TimeoutError as SRTimeoutError,
     UploadError,
 )
@@ -64,7 +64,7 @@ def main() -> None:
         print(f"job failed at step={e.step}: {e.reason}")
     except SRTimeoutError:
         print("job didn't finish within the client's timeout — safe to retry with submit()/poll")
-    except STTError as e:
+    except SpeechRevolutionsError as e:
         # Catch-all: every SDK exception carries status_code and request_id when available.
         print(f"request failed (HTTP {e.status_code}, request_id={e.request_id}): {e}")
 

@@ -25,5 +25,5 @@ cd tests/node_harness && npm install
 Recipes construct `SpeechRevolutions()` with no arguments, as a reader should.
 Without an environment override there is no way to point them anywhere but
 production — which is why none of this was testable before. The SDKs now read
-`SPEECHREVOLUTIONS_BASE_URL` (or `STT_BASE_URL`), symmetric with the API key.
+`SPEECHREVOLUTIONS_BASE_URL`, symmetric with the API key.
 That is also what you want for staging or an egress proxy.

@@ -71,6 +71,5 @@ for a broader walkthrough, including OpenAI Whisper and ElevenLabs.
 
 ---
 
-Every recipe reads its API key from `SPEECHREVOLUTIONS_API_KEY` (or the
-legacy `STT_API_KEY`). Questions or requests for a recipe that isn't here
+Every recipe reads its API key from `SPEECHREVOLUTIONS_API_KEY`. Questions or requests for a recipe that isn't here
 yet — open an issue.

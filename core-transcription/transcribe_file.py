@@ -4,14 +4,14 @@
     python transcribe_file.py meeting.mp3 --output-type srt --out meeting.srt
     python transcribe_file.py meeting.mp3 --no-speaker-labels --no-word-timestamps
 
-Reads the API key from SPEECHREVOLUTIONS_API_KEY (or STT_API_KEY).
+Reads the API key from SPEECHREVOLUTIONS_API_KEY.
 """
 
 import argparse
 import sys
 
 from speechrevolutions import SpeechRevolutions
-from speechrevolutions.exceptions import STTError
+from speechrevolutions.exceptions import SpeechRevolutionsError
 
 
 def main() -> None:
@@ -33,7 +33,7 @@ def main() -> None:
             word_timestamps=not args.no_word_timestamps,
             progress=True,
         )
-    except STTError as e:
+    except SpeechRevolutionsError as e:
         print(f"transcription failed: {e}", file=sys.stderr)
         raise SystemExit(1) from e
 
