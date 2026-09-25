@@ -2,8 +2,8 @@
 
     python speaker_labelled_transcript.py meeting.mp3
 
-    [00:00:03] SPEAKER_0: Thanks everyone for joining today.
-    [00:00:07] SPEAKER_1: Happy to be here, let's get started.
+    [00:00:03] SPEAKER_1: Thanks everyone for joining today.
+    [00:00:07] SPEAKER_2: Happy to be here, let's get started.
 """
 
 
