@@ -56,17 +56,22 @@ def main() -> None:
         print(f"no such file: {args.audio}", file=sys.stderr)
         raise SystemExit(1) from None
     except AuthenticationError:
-        print("bad or missing API key — check SPEECHREVOLUTIONS_API_KEY")
+        print("bad or missing API key — check SPEECHREVOLUTIONS_API_KEY", file=sys.stderr)
+        raise SystemExit(1) from None
     except UploadError as e:
-        print(f"upload didn't go through: {e}")
+        print(f"upload didn't go through: {e}", file=sys.stderr)
+        raise SystemExit(1) from None
     except JobFailedError as e:
         # e.step is where it failed (e.g. "transcribe"), e.reason is the server's explanation
-        print(f"job failed at step={e.step}: {e.reason}")
+        print(f"job failed at step={e.step}: {e.reason}", file=sys.stderr)
+        raise SystemExit(1) from None
     except SRTimeoutError:
-        print("job didn't finish within the client's timeout — safe to retry with submit()/poll")
+        print("job didn't finish within the client's timeout — safe to retry with submit()/poll", file=sys.stderr)
+        raise SystemExit(1) from None
     except SpeechRevolutionsError as e:
         # Catch-all: every SDK exception carries status_code and request_id when available.
-        print(f"request failed (HTTP {e.status_code}, request_id={e.request_id}): {e}")
+        print(f"request failed (HTTP {e.status_code}, request_id={e.request_id}): {e}", file=sys.stderr)
+        raise SystemExit(1) from None
 
 
 if __name__ == "__main__":

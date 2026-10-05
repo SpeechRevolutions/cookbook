@@ -140,8 +140,17 @@ def test_retry_and_error_handling_reports_a_missing_file_cleanly(api, tmp_path):
 def test_retry_and_error_handling_surfaces_a_server_side_failure(api, audio, tmp_path):
     api.fail_job_at = "gpu_timestamps"
     out = run_recipe("core-transcription/retry_and_error_handling.py", str(audio),
-                     api=api, cwd=tmp_path)
-    assert "job failed at step=" in out.stdout
+                     api=api, cwd=tmp_path, expect_rc=1)
+    assert "job failed at step=" in out.stderr
+    assert "Traceback" not in out.stderr
+
+
+def test_retry_and_error_handling_exits_nonzero_on_a_bad_key(api, audio, tmp_path):
+    """Every error path must fail the process, or a script calling it sees success."""
+    out = run_recipe("core-transcription/retry_and_error_handling.py", str(audio),
+                     api=api, cwd=tmp_path, expect_rc=1,
+                     extra_env={"SPEECHREVOLUTIONS_API_KEY": "wrong-key"})
+    assert "bad or missing API key" in out.stderr
     assert "Traceback" not in out.stderr
 
 
