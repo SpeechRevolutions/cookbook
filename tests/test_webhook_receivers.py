@@ -63,9 +63,10 @@ def _post(url: str, timeout: float = 20.0) -> tuple[int, str]:
 class Receiver:
     """Runs the published recipe under uvicorn, exactly as its docstring says."""
 
-    def __init__(self, api, *, secret: str = SECRET) -> None:
+    def __init__(self, api, *, secret: str = SECRET, public_url: str | None = None) -> None:
         self.api = api
         self.secret = secret
+        self.public_url = public_url
         self.port = _free_port()
         self.proc: subprocess.Popen | None = None
 
@@ -78,6 +79,9 @@ class Receiver:
             "PYTHONPATH": os.environ.get("SR_SDK_SRC", ""),
             "PYTHONUNBUFFERED": "1",
         }
+        env.pop("PUBLIC_URL", None)
+        if self.public_url:
+            env["PUBLIC_URL"] = self.public_url
         self.proc = subprocess.Popen(
             [sys.executable, "-m", "uvicorn", "webhook_receiver_fastapi:app",
              "--port", str(self.port), "--log-level", "warning"],
@@ -192,3 +196,19 @@ def test_the_webhook_actually_reached_the_receiver(signed_api):
     assert sent[0].get("response_status") == 200, (
         f"receiver did not ack the delivery: {sent[0]}"
     )
+
+
+def test_without_public_url_submit_is_a_clear_400(signed_api):
+    """The API refuses a localhost callback, so the recipe must not default to one."""
+    with Receiver(signed_api) as rcv:
+        status, body = _post(f"{rcv.base}/transcribe?audio=https://example.com/a.mp3")
+    assert status == 400
+    assert "PUBLIC_URL" in body
+    assert not signed_api.jobs, "no job should be submitted without a callback URL"
+
+
+def test_public_url_is_the_callback_base(signed_api):
+    with Receiver(signed_api, public_url="https://hooks.example.com") as rcv:
+        status, body = _post(f"{rcv.base}/transcribe?audio=https://example.com/a.mp3")
+    assert status == 200, body
+    assert signed_api.only_job().callback_url == "https://hooks.example.com/webhooks/speechrevolutions"

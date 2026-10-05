@@ -68,9 +68,10 @@ class ExpressReceiver:
     respect.
     """
 
-    def __init__(self, api, *, secret: str = SECRET) -> None:
+    def __init__(self, api, *, secret: str = SECRET, public_url: str | None = None) -> None:
         self.api = api
         self.secret = secret
+        self.public_url = public_url
         self.port = _free_port()
         self.proc: subprocess.Popen | None = None
 
@@ -91,6 +92,9 @@ class ExpressReceiver:
             "SR_WEBHOOK_SECRET": self.secret,
             "PORT": str(self.port),
         }
+        env.pop("PUBLIC_URL", None)
+        if self.public_url:
+            env["PUBLIC_URL"] = self.public_url
         self.proc = subprocess.Popen(
             ["node", str(runner)], cwd=str(HARNESS), env=env,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
@@ -194,3 +198,19 @@ def test_the_receiver_acked_the_delivery(signed_api):
     sent = signed_api.wait_webhooks(1)
     assert sent[0]["job_id"] == job_id
     assert sent[0].get("response_status") == 200
+
+
+def test_without_public_url_submit_is_a_clear_400(signed_api):
+    """The API refuses a localhost callback, so the recipe must not default to one."""
+    with ExpressReceiver(signed_api) as rcv:
+        status, body = _post(f"{rcv.base}/transcribe?audio=https://example.com/a.mp3")
+    assert status == 400
+    assert "PUBLIC_URL" in body
+    assert not signed_api.jobs, "no job should be submitted without a callback URL"
+
+
+def test_public_url_is_the_callback_base(signed_api):
+    with ExpressReceiver(signed_api, public_url="https://hooks.example.com") as rcv:
+        status, body = _post(f"{rcv.base}/transcribe?audio=https://example.com/a.mp3")
+    assert status == 200, body
+    assert signed_api.only_job().callback_url == "https://hooks.example.com/webhooks/speechrevolutions"

@@ -3,12 +3,14 @@
  *
  *   npm install express speechrevolutions
  *   export SR_WEBHOOK_SECRET=...        # the signing secret from your dashboard
+ *   export PUBLIC_URL=https://<your-tunnel>.ngrok-free.app   # where the API can reach this server
  *   node webhook_receiver_express.mjs
  *
  *   curl -X POST "http://localhost:8000/transcribe?audio=https://example.com/audio.mp3"
  *
- * Point `callbackUrl` at a URL this server is reachable at (e.g. an ngrok
- * tunnel during local development).
+ * PUBLIC_URL must be reachable from the public internet (e.g. an ngrok tunnel
+ * during local development): the API refuses a localhost or private-network
+ * callbackUrl.
  */
 
 import { createHmac, timingSafeEqual } from "node:crypto";
@@ -17,6 +19,8 @@ import { SpeechRevolutions } from "speechrevolutions";
 
 const client = new SpeechRevolutions(); // reads SPEECHREVOLUTIONS_API_KEY
 const SECRET = process.env.SR_WEBHOOK_SECRET;
+// The API delivers webhooks over the public internet, so it cannot call localhost.
+const PUBLIC_URL = process.env.PUBLIC_URL;
 
 // In-memory for this recipe; use a real datastore in production.
 const JOBS = new Map();
@@ -32,7 +36,10 @@ const app = express();
 
 app.post("/transcribe", express.json(), async (req, res) => {
   const audio = req.query.audio;
-  const callbackBaseUrl = req.query.callback_base_url ?? "http://localhost:8000";
+  const callbackBaseUrl = req.query.callback_base_url ?? PUBLIC_URL;
+  if (!callbackBaseUrl) {
+    return res.status(400).json({ error: "set PUBLIC_URL to a public URL that reaches this server" });
+  }
   const jobId = await client.submit(audio, {
     callbackUrl: `${callbackBaseUrl}/webhooks/speechrevolutions`,
   });

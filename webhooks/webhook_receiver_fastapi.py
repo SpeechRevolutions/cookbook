@@ -2,19 +2,22 @@
 
     pip install fastapi uvicorn
     export SR_WEBHOOK_SECRET=...        # the signing secret from your dashboard
+    export PUBLIC_URL=https://<your-tunnel>.ngrok-free.app   # where the API can reach this server
     uvicorn webhook_receiver_fastapi:app --reload
 
     curl -X POST "http://localhost:8000/transcribe?audio=https://example.com/audio.mp3"
 
-Point `callback_url` at a URL this server is reachable at (e.g. an ngrok
-tunnel during local development). The job runs entirely server-side; nothing
-here holds a connection open waiting for it.
+PUBLIC_URL must be reachable from the public internet (e.g. an ngrok tunnel
+during local development): the API refuses a localhost or private-network
+callback_url. The job runs entirely server-side; nothing here holds a
+connection open waiting for it.
 """
 
 import hashlib
 import hmac
 import json
 import os
+from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Request
 from speechrevolutions import SpeechRevolutions
@@ -22,6 +25,8 @@ from speechrevolutions import SpeechRevolutions
 app = FastAPI()
 client = SpeechRevolutions()  # reads SPEECHREVOLUTIONS_API_KEY
 SECRET = os.environ["SR_WEBHOOK_SECRET"]
+# The API delivers webhooks over the public internet, so it cannot call localhost.
+PUBLIC_URL = os.environ.get("PUBLIC_URL")
 
 # In-memory for this recipe; use a real datastore in production.
 JOBS: dict[str, dict] = {}
@@ -34,7 +39,9 @@ def verify_signature(raw_body: bytes, signature_header: str, secret: str) -> boo
 
 
 @app.post("/transcribe")
-def start_transcription(audio: str, callback_base_url: str = "http://localhost:8000"):
+def start_transcription(audio: str, callback_base_url: Optional[str] = PUBLIC_URL):
+    if not callback_base_url:
+        raise HTTPException(status_code=400, detail="set PUBLIC_URL to a public URL that reaches this server")
     job_id = client.submit(audio, callback_url=f"{callback_base_url}/webhooks/speechrevolutions")
     # setdefault, not assignment: the webhook can arrive before this line runs.
     # The platform fires it the moment the job finishes, and a short clip can
