@@ -21,7 +21,10 @@ def print_transcript(deepgram_response: dict) -> None:
         print(f"  speaker {utt['speaker']}: {utt['transcript']}")
 
 
-# --- Before (Deepgram SDK) ---------------------------------------------------
+# --- Before (Deepgram Python SDK v3: pip install "deepgram-sdk>=3,<4") ---------
+# PrerecordedOptions and listen.rest.v("1") are v3 APIs; deepgram-sdk 5 removed
+# them. If you are on a newer SDK your call looks different, but the response
+# dict that print_transcript() walks has the same shape.
 #     from deepgram import DeepgramClient, PrerecordedOptions
 #     dg = DeepgramClient(DEEPGRAM_API_KEY)
 #     response = dg.listen.rest.v("1").transcribe_file(
