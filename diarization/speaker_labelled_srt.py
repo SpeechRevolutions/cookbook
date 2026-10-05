@@ -1,9 +1,12 @@
-"""Generate subtitles that show who's speaking.
+"""Generate subtitles that show who's speaking, in your own format.
 
-`output_type="srt"` gives you ready-made subtitle bytes, but without speaker
-names baked in. This builds an SRT file from the JSON transcript instead, so
-each cue can be prefixed with "Speaker X:" — useful for interview or panel
-footage where knowing who's talking matters as much as what was said.
+`output_type="srt"` already gives you ready-made cues that never span two
+speakers, each starting with "SPEAKER_N: " (speaker labels are on by
+default). This builds the SRT file from the JSON transcript instead — one cue
+per utterance, split if it runs long, prefixed with its speaker — so you
+control the format: swap the labels for real names, change the cue length, or
+restyle the prefix. Useful for interview or panel footage where knowing who's talking matters as
+much as what was said.
 
     python speaker_labelled_srt.py panel.mp3 --out panel.srt
 """

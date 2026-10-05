@@ -31,14 +31,14 @@ export SPEECHREVOLUTIONS_API_KEY=stt_...
 | Recipe | Description |
 |---|---|
 | [speaker_labelled_transcript.py](diarization/speaker_labelled_transcript.py) | Print a timestamped, speaker-labelled conversation log |
-| [speaker_labelled_srt.py](diarization/speaker_labelled_srt.py) | Generate subtitles with "Speaker X:" prefixes on each cue |
+| [speaker_labelled_srt.py](diarization/speaker_labelled_srt.py) | Build speaker-prefixed subtitle cues yourself from the JSON transcript (e.g. to use real names) |
 
 ## Subtitles
 
 | Recipe | Description |
 |---|---|
 | [generate_srt_and_vtt.py](subtitles/generate_srt_and_vtt.py) | Get ready-made SRT/WebVTT files straight from the API |
-| [subtitles_by_word_count.py](subtitles/subtitles_by_word_count.py) | Build short, caption-style cues capped at N words each |
+| [subtitles_by_word_count.py](subtitles/subtitles_by_word_count.py) | Build shorter, fixed-length cues (N words each) client-side |
 
 ## Webhooks
 

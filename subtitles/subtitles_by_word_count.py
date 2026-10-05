@@ -1,10 +1,10 @@
 """Build short, caption-style subtitles capped at N words per cue.
 
-The server's `output_type="srt"` chunks cues by its own logic (roughly one
-per sentence/utterance), which can run long for fast talkers. This recipe
-builds cues client-side from the word-level JSON transcript instead, capping
-every cue at a fixed word count — the standard "easy to read at a glance"
-caption style.
+The server's `output_type="srt"` groups words into cues of up to two 42-character
+lines and 7 seconds, which suits film and broadcast subtitles. For punchier
+captions (social clips, word-by-word styles) this recipe builds cues client-side
+from the word-level JSON transcript instead, putting a fixed number of words in
+each cue.
 
     python subtitles_by_word_count.py talk.mp4 --words-per-cue 6 --out talk.srt
 """
