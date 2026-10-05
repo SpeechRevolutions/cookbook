@@ -35,6 +35,9 @@ jobs:
         with:
           node-version: "20"
       - run: pip install -r requirements.txt pytest
+      # Without this the Express receiver tests are skipped, silently.
+      - run: npm install --no-audit --no-fund
+        working-directory: tests/node_harness
       # `tests` is passed explicitly: without a path argument of our own, pytest
       # treats the --sdk-path VALUE as the target directory, anchors rootdir there,
       # never loads our conftest, and then rejects --sdk-path as unrecognised.

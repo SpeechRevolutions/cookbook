@@ -41,11 +41,16 @@ def pytest_configure(config: pytest.Config) -> None:
             "repo. Clone it beside this one, or pass --sdk-path.",
             returncode=4,
         )
-    # For this process (to import MockAPI) and for the recipe subprocesses
-    # (so `import speechrevolutions` resolves to the local SDK, not a release).
+    # This process imports MockAPI from the checkout. The recipe subprocesses run
+    # against the INSTALLED (published) SDK -- the one a reader gets from
+    # `pip install -r requirements.txt` -- unless SR_TEST_SDK_CHECKOUT=1 asks for
+    # the checkout's src/ (useful when developing the SDK itself).
     sys.path.insert(0, str(sdk / "tests"))
-    sys.path.insert(0, str(src))
-    os.environ["SR_SDK_SRC"] = str(src)
+    if os.environ.get("SR_TEST_SDK_CHECKOUT") == "1":
+        sys.path.insert(0, str(src))
+        os.environ["SR_SDK_SRC"] = str(src)
+    else:
+        os.environ["SR_SDK_SRC"] = ""
 
 
 @pytest.fixture
